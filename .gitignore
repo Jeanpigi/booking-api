@@ -217,4 +217,7 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+# Folder database
+./datase/reservas.db
+
 # End of https://www.toptal.com/developers/gitignore/api/node,dotenv,linux,macos,windows

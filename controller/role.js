@@ -13,7 +13,6 @@ const roles = async (req, res) => {
 const insertRole = async (req, res) => {
   try {
     const { nombre_rol } = req.body;
-    console.log(nombre_rol);
     await createRoleOfUser(nombre_rol);
     res.status(201).send({ message: "Role created successfully" });
   } catch (error) {

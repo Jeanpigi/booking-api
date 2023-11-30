@@ -9,81 +9,65 @@ const db = new sqlite3.Database(dbPath, (err) => {
   } else {
     console.log("Base de datos conectada");
 
-    db.run(
-      ` CREATE TABLE IF NOT EXISTS rol (
+    // Define un arreglo de definiciones de tabla
+    const tableDefinitions = [
+      {
+        tableName: "rol",
+        sql: `
+          CREATE TABLE IF NOT EXISTS rol (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nombre_rol text,
-            )`,
-      (err) => {
-        if (err) {
-          console.log("Table 'rol' already exists");
-        } else {
-          console.log("Table 'rol' created");
-        }
-      }
-    );
+            nombre_rol TEXT
+          );`,
+      },
+      {
+        tableName: "user",
+        sql: `
+          CREATE TABLE IF NOT EXISTS user (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre_usuario TEXT,
+            email TEXT UNIQUE,
+            password TEXT,
+            FOREIGN KEY (rol_id) REFERENCES rol(id)
+          );`,
+      },
+      {
+        tableName: "recurso",
+        sql: `
+          CREATE TABLE IF NOT EXISTS recurso (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre TEXT NOT NULL,
+            descripcion TEXT,
+            ubicacion TEXT,
+            capacidad INTEGER,
+            disponibilidad BOOLEAN DEFAULT 1
+          );`,
+      },
+      {
+        tableName: "reserva",
+        sql: `
+          CREATE TABLE IF NOT EXISTS reserva (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            fecha_reserva DATE NOT NULL,
+            hora_inicio TIME NOT NULL,
+            hora_fin TIME NOT NULL,
+            usuario_id INTEGER NOT NULL,
+            recurso_id INTEGER NOT NULL,
+            CONSTRAINT fk_usuario FOREIGN KEY (usuario_id) REFERENCES user(id),
+            CONSTRAINT fk_recurso FOREIGN KEY (recurso_id) REFERENCES recurso(id)
+          );`,
+      },
+    ];
 
-    // Crear tabla de usuario
-    db.run(
-      `
-      CREATE TABLE IF NOT EXISTS user (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT,
-        email TEXT UNIQUE,
-        password TEXT,
-        CONSTRAINT email_unique UNIQUE (email),
-        FOREIGN KEY (rol_id) REFERENCES rol(id)
-      );`,
-      (err) => {
+    // Itera sobre la matriz de definiciones de tabla y crea las tablas
+    tableDefinitions.forEach((tableDef) => {
+      db.run(tableDef.sql, (err) => {
         if (err) {
-          console.log("Table 'user' already exists");
+          console.log(`Table '${tableDef.tableName}' already exists`);
         } else {
-          console.log("Table 'user' created");
+          console.log(`Table '${tableDef.tableName}' created`);
         }
-      }
-    );
-
-    // Crear tabla de recurso
-    db.run(
-      `
-      CREATE TABLE IF NOT EXISTS recurso (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nombre TEXT NOT NULL,
-        descripcion TEXT,
-        ubicacion TEXT,
-        capacidad INTEGER,
-        disponibilidad BOOLEAN DEFAULT 1
-      );`,
-      (err) => {
-        if (err) {
-          console.log("Table 'recurso' already exists");
-        } else {
-          console.log("Table 'recurso' created");
-        }
-      }
-    );
-
-    // Crear tabla de reserva
-    db.run(
-      `
-      CREATE TABLE IF NOT EXISTS reserva (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        fecha_reserva DATE NOT NULL,
-        hora_inicio TIME NOT NULL,
-        hora_fin TIME NOT NULL,
-        usuario_id INTEGER NOT NULL,
-        recurso_id INTEGER NOT NULL,
-        CONSTRAINT fk_usuario FOREIGN KEY (usuario_id) REFERENCES user(id),
-        CONSTRAINT fk_recurso FOREIGN KEY (recurso_id) REFERENCES recurso(id)
-      );`,
-      (err) => {
-        if (err) {
-          console.log("Table 'reserva' already exists");
-        } else {
-          console.log("Table 'reserva' created");
-        }
-      }
-    );
+      });
+    });
   }
 });
 
